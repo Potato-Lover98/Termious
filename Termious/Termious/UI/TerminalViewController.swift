@@ -114,22 +114,22 @@ public final class TerminalViewController: UIViewController {
 // MARK: - InputBarDelegate
 
 extension TerminalViewController: InputBarDelegate {
-    func inputBar(_ bar: InputBar, didSubmit text: String) {
+    public func inputBar(_ bar: InputBar, didSubmit text: String) {
         runCommand(text)
         bar.clear()
     }
 
-    func inputBar(_ bar: InputBar, didChange text: String) {
+    public func inputBar(_ bar: InputBar, didChange text: String) {
         currentInput = text
     }
 
-    func inputBarDidTapUp(_ bar: InputBar) {
+    public func inputBarDidTapUp(_ bar: InputBar) {
         guard !history.isEmpty else { return }
         historyIndex = max(0, historyIndex - 1)
         bar.setText(history[historyIndex])
     }
 
-    func inputBarDidTapDown(_ bar: InputBar) {
+    public func inputBarDidTapDown(_ bar: InputBar) {
         guard !history.isEmpty else { return }
         historyIndex = min(history.count, historyIndex + 1)
         if historyIndex >= history.count {
@@ -139,7 +139,7 @@ extension TerminalViewController: InputBarDelegate {
         }
     }
 
-    func inputBarDidTapTab(_ bar: InputBar) {
+    public func inputBarDidTapTab(_ bar: InputBar) {
         let text = bar.text
         let parts = text.split(separator: " ", omittingEmptySubsequences: false)
         guard let last = parts.last else { return }
@@ -157,39 +157,39 @@ extension TerminalViewController: InputBarDelegate {
 }
 
 extension TerminalViewController: ConsoleViewDelegate {
-    func consoleViewDidScrollToBottom(_ view: ConsoleView) {}
+    public func consoleViewDidScrollToBottom(_ view: ConsoleView) {}
 }
 
 // MARK: - ShellHostDelegate
 
 extension TerminalViewController: ShellHostDelegate {
-    func shellHostDidRequestOpenPicker(_ host: ShellHost) {
+    public func shellHostDidRequestOpenPicker(_ host: ShellHost) {
         DispatchQueue.main.async { [weak self] in self?.presentDocumentPicker() }
     }
 
-    func shellHostDidRequestExit(_ host: ShellHost) {
+    public func shellHostDidRequestExit(_ host: ShellHost) {
         consoleView.appendOutput("\n[session ended]\n", color: Theme.dim)
     }
 
-    func shellHostDidRequestClearScreen(_ host: ShellHost) {
+    public func shellHostDidRequestClearScreen(_ host: ShellHost) {
         consoleView.clear()
         renderPrompt()
     }
 
-    func shellHostDidRequestSudoPrompt(_ host: ShellHost, command: String) {
+    public func shellHostDidRequestSudoPrompt(_ host: ShellHost, command: String) {
         pendingSudoCommand = command
         DispatchQueue.main.async { [weak self] in self?.presentSudoPasswordAlert() }
     }
 
-    func shellHostDidRequestSudoExec(_ host: ShellHost, command: String) {
+    public func shellHostDidRequestSudoExec(_ host: ShellHost, command: String) {
         executeSudoCommand(command)
     }
 
-    func shellHostDidRequestPasswdChange(_ host: ShellHost) {
+    public func shellHostDidRequestPasswdChange(_ host: ShellHost) {
         DispatchQueue.main.async { [weak self] in self?.presentPasswdChangeAlert() }
     }
 
-    func shellHostDidRequestShowHistory(_ host: ShellHost) {
+    public func shellHostDidRequestShowHistory(_ host: ShellHost) {
         if history.isEmpty {
             consoleView.appendOutput("No history yet.\n", color: Theme.dim)
         } else {
@@ -201,7 +201,7 @@ extension TerminalViewController: ShellHostDelegate {
         renderPrompt()
     }
 
-    func shellHostDidRequestManPage(_ host: ShellHost, command: String) {
+    public func shellHostDidRequestManPage(_ host: ShellHost, command: String) {
         guard let cmd = host.registry.resolve(command) else {
             consoleView.appendOutput("No manual entry for \(command)\n", color: Theme.error)
             renderPrompt()
@@ -224,7 +224,7 @@ extension TerminalViewController: ShellHostDelegate {
         renderPrompt()
     }
 
-    func shellHostDidRequestTimeCommand(_ host: ShellHost, command: String) {
+    public func shellHostDidRequestTimeCommand(_ host: ShellHost, command: String) {
         let start = Date()
         host.execute(command,
                      onOutput: { [weak self] text in
@@ -239,7 +239,7 @@ extension TerminalViewController: ShellHostDelegate {
         renderPrompt()
     }
 
-    func shellHostDidRequestWatch(_ host: ShellHost, interval: Double, command: String) {
+    public func shellHostDidRequestWatch(_ host: ShellHost, interval: Double, command: String) {
         watchTimer?.invalidate()
         consoleView.appendOutput("Watching: \(command) every \(interval)s (Ctrl-C to stop)\n",
                                  color: Theme.accent)
@@ -265,14 +265,14 @@ extension TerminalViewController: ShellHostDelegate {
         }
     }
 
-    func shellHostDidRequestReboot(_ host: ShellHost) {
+    public func shellHostDidRequestReboot(_ host: ShellHost) {
         watchTimer?.invalidate()
         SudoSession.shared.invalidate()
         consoleView.clear()
         printWelcome()
     }
 
-    func shellHostDidRequestThemeChange(_ host: ShellHost, scheme: String) {
+    public func shellHostDidRequestThemeChange(_ host: ShellHost, scheme: String) {
         let schemes: [String: (bg: UIColor, fg: UIColor, prompt: UIColor)] = [
             "dark":       (UIColor(red: 0.07, green: 0.07, blue: 0.08, alpha: 1),
                            UIColor(red: 0.88, green: 0.90, blue: 0.92, alpha: 1),
@@ -305,7 +305,7 @@ extension TerminalViewController: ShellHostDelegate {
         renderPrompt()
     }
 
-    func shellHostDidRequestBackgroundChange(_ host: ShellHost, styleName: String) {
+    public func shellHostDidRequestBackgroundChange(_ host: ShellHost, styleName: String) {
         if styleName == "off" {
             bgManager.clear()
             view.backgroundColor = Theme.background
@@ -323,7 +323,7 @@ extension TerminalViewController: ShellHostDelegate {
         renderPrompt()
     }
 
-    func shellHostDidRequestTineoEdit(_ host: ShellHost, mode: String, path: String) {
+    public func shellHostDidRequestTineoEdit(_ host: ShellHost, mode: String, path: String) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             if mode == "NEW" {
@@ -346,7 +346,7 @@ extension TerminalViewController: ShellHostDelegate {
         }
     }
 
-    func shellHostDidRequestOpenURL(_ host: ShellHost, url: String) {
+    public func shellHostDidRequestOpenURL(_ host: ShellHost, url: String) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             var urlStr = url
@@ -366,14 +366,14 @@ extension TerminalViewController: ShellHostDelegate {
         }
     }
 
-    func shellHostDidRequestSourceExec(_ host: ShellHost, content: String) {
+    public func shellHostDidRequestSourceExec(_ host: ShellHost, content: String) {
         host.execute(content,
                      onOutput: { [weak self] text in self?.consoleView.appendOutput(text, color: Theme.foreground) },
                      onError: { [weak self] text in self?.consoleView.appendOutput(text, color: Theme.error) })
         renderPrompt()
     }
 
-    func shellHostDidRequestAeroClone(_ host: ShellHost, repo: String, name: String) {
+    public func shellHostDidRequestAeroClone(_ host: ShellHost, repo: String, name: String) {
         consoleView.appendOutput("Cloning \(repo) as \(name)...\n", color: Theme.accent)
         let group = DispatchGroup()
         group.enter()
@@ -481,7 +481,7 @@ extension TerminalViewController: ShellHostDelegate {
 }
 
 extension TerminalViewController: UIDocumentPickerDelegate {
-    public func documentPicker(_ controller: UIDocumentPickerViewController,
+    public public func documentPicker(_ controller: UIDocumentPickerViewController,
                                didPickDocumentsAt urls: [URL]) {
         guard let url = urls.first else { return }
         if let id = host.fs.addBookmark(for: url) {
@@ -495,7 +495,7 @@ extension TerminalViewController: UIDocumentPickerDelegate {
         }
     }
 
-    public func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
+    public public func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
         renderPrompt()
     }
 }

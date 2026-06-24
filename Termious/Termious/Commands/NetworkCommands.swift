@@ -455,9 +455,9 @@ struct TarCommand: BuiltinCommand {
             context.stderr("tar: missing mode or archive\nusage: \(usage)\n")
             return 1
         }
-        if mode.contains("c") { return create(archive, files, context) }
-        if mode.contains("t") { return list(archive, context) }
-        if mode.contains("x") { return extract(archive, context) }
+        if mode.contains("c") { return create(archive, files, context: context) }
+        if mode.contains("t") { return list(archive, context: context) }
+        if mode.contains("x") { return extract(archive, context: context) }
         context.stderr("tar: unknown mode\n")
         return 1
     }

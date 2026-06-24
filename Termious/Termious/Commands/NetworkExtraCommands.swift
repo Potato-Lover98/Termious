@@ -157,7 +157,8 @@ struct DigCommand: BuiltinCommand {
                 for ans in answers {
                     let name = ans["name"] as? String ?? host
                     let ttl = ans["TTL"] as? Int ?? 300
-                    let rtype = ans["type"] as? Int == 1 ? "A" : (ans["type"] as? Int == 5 ? "CNAME" : String(ans["type"] ?? 0))
+                    let typeInt = ans["type"] as? Int ?? 0
+                    let rtype = typeInt == 1 ? "A" : (typeInt == 5 ? "CNAME" : String(typeInt))
                     let rdata = ans["data"] as? String ?? ""
                     context.stdout("\(name)\t\(ttl)\tIN\t\(rtype)\t\(rdata)\n")
                 }
