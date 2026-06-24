@@ -171,7 +171,7 @@ extension TerminalViewController: ShellHostDelegate {
         consoleView.appendOutput("\n[session ended]\n", color: Theme.dim)
     }
 
-    public func shellHostDidRequestClearScreen(_ host: ShellHost) {
+    public func shellHostDidClearScreen(_ host: ShellHost) {
         consoleView.clear()
         renderPrompt()
     }
@@ -481,7 +481,7 @@ extension TerminalViewController: ShellHostDelegate {
 }
 
 extension TerminalViewController: UIDocumentPickerDelegate {
-    public public func documentPicker(_ controller: UIDocumentPickerViewController,
+    public func documentPicker(_ controller: UIDocumentPickerViewController,
                                didPickDocumentsAt urls: [URL]) {
         guard let url = urls.first else { return }
         if let id = host.fs.addBookmark(for: url) {
@@ -495,7 +495,7 @@ extension TerminalViewController: UIDocumentPickerDelegate {
         }
     }
 
-    public public func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
+    public func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
         renderPrompt()
     }
 }
