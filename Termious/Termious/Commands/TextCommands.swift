@@ -407,16 +407,16 @@ struct StatCommand: BuiltinCommand {
         let started = context.fs.startRootAccess()
         defer { if started { context.fs.stopRootAccess() } }
         let fm = FileManager.default
-        var error = false
+        var hadError = false
         for p in arguments {
             guard let url = context.fs.resolve(p) else {
                 context.stderr("stat: \(p): no such file\n")
-                error = true
+                hadError = true
                 continue
             }
             guard let attrs = try? fm.attributesOfItem(atPath: url.path) else {
                 context.stderr("stat: \(p): cannot stat\n")
-                error = true
+                hadError = true
                 continue
             }
             let size = (attrs[.size] as? Int) ?? 0
@@ -429,7 +429,7 @@ struct StatCommand: BuiltinCommand {
             out += "Created:  \(ISO8601DateFormatter().string(from: created))\n\n"
             context.stdout(out)
         }
-        return error ? 1 : 0
+        return hadError ? 1 : 0
     }
 }
 

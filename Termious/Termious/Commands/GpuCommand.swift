@@ -58,8 +58,9 @@ struct GpuCommand: BuiltinCommand {
         context.stdout("Max threads:   \(device.maxThreadsPerThreadgroup.width) per group\n")
         context.stdout("Recommended:   \(device.recommendedMaxWorkingSetSize / 1024 / 1024) MB working set\n")
         context.stdout("Unified mem:   \(device.hasUnifiedMemory ? "yes" : "no")\n")
-        context.stdout("Supports:      \(device.supportsCompute ? "compute" : "no compute")\n")
-        if device.supportsCompute {
+        let supportsCompute = device.maxThreadsPerThreadgroup.width > 0
+        context.stdout("Supports:      \(supportsCompute ? "compute" : "no compute")\n")
+        if supportsCompute {
             context.stdout("Metal:         available for heavy tasks\n")
         }
         return 0

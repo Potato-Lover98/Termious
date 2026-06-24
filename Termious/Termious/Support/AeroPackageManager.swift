@@ -318,7 +318,9 @@ public final class AeroPackageManager {
             try? FileManager.default.removeItem(at: pkgDir)
         }
         lock.lock()
-        let removed = installed.removeAll { $0.name == name }
+        let before = installed.count
+        installed.removeAll { $0.name == name }
+        let removed = installed.count < before
         saveManifest()
         lock.unlock()
         return removed

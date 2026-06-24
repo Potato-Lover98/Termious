@@ -456,12 +456,12 @@ struct WhichCommand: BuiltinCommand {
     func run(arguments: [String], context: CommandContext) -> Int32 {
         // We don't have access to the registry directly here; emit a signal
         // that ShellHost intercepts. For simplicity, return a generic answer.
-        var error = false
+        var hadError = false
         for cmd in arguments {
             // Builtin commands are "in" the shell
             context.stdout("/bin/termious/\(cmd)\n")
         }
-        return error ? 1 : 0
+        return hadError ? 1 : 0
     }
 }
 

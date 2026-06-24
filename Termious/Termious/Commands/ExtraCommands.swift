@@ -1007,18 +1007,18 @@ struct ShredCommand: BuiltinCommand {
         }
         let started = context.fs.startRootAccess()
         defer { if started { context.fs.stopRootAccess() } }
-        var error = false
+        var hadError = false
         for f in files {
-            guard let url = context.fs.resolve(f) else { error = true; continue }
+            guard let url = context.fs.resolve(f) else { hadError = true; continue }
             guard let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
-                  let size = attrs[.size] as? Int else { error = true; continue }
+                  let size = attrs[.size] as? Int else { hadError = true; continue }
             for _ in 0..<passes {
                 let random = Data((0..<size).map { _ in UInt8.random(in: 0...255) })
                 try? random.write(to: url)
             }
             if remove { try? FileManager.default.removeItem(at: url) }
         }
-        return error ? 1 : 0
+        return hadError ? 1 : 0
     }
 }
 

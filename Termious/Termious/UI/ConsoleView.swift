@@ -40,10 +40,10 @@ public final class ConsoleView: UIScrollView {
         addSubview(textView)
 
         NSLayoutConstraint.activate([
-            textView.topAnchor.constraint(equalTo: contentArea.topAnchor),
-            textView.leadingAnchor.constraint(equalTo: contentArea.leadingAnchor),
-            textView.trailingAnchor.constraint(equalTo: contentArea.trailingAnchor),
-            textView.bottomAnchor.constraint(equalTo: contentArea.bottomAnchor),
+            textView.topAnchor.constraint(equalTo: self.topAnchor),
+            textView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+            textView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+            textView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
             textView.widthAnchor.constraint(equalTo: frameLayoutGuide.widthAnchor)
         ])
     }

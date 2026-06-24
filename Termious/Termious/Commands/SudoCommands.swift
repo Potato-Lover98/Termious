@@ -112,22 +112,22 @@ struct ChownCommand: BuiltinCommand {
         let started = context.fs.startRootAccess()
         defer { if started { context.fs.stopRootAccess() } }
 
-        var error = false
+        var hadError = false
         for file in files {
             guard let url = context.fs.resolve(file) else {
                 context.stderr("chown: cannot access '\(file)'\n")
-                error = true
+                hadError = true
                 continue
             }
             if !FileManager.default.fileExists(atPath: url.path) {
                 context.stderr("chown: cannot access '\(file)': no such file\n")
-                error = true
+                hadError = true
                 continue
             }
             let logical = context.fs.logicalPath(of: url)
             FileMetadataStore.shared.update(logical, owner: owner, group: group)
         }
-        return error ? 1 : 0
+        return hadError ? 1 : 0
     }
 }
 
@@ -160,22 +160,22 @@ struct ChmodCommand: BuiltinCommand {
         let started = context.fs.startRootAccess()
         defer { if started { context.fs.stopRootAccess() } }
 
-        var error = false
+        var hadError = false
         for file in files {
             guard let url = context.fs.resolve(file) else {
                 context.stderr("chmod: cannot access '\(file)'\n")
-                error = true
+                hadError = true
                 continue
             }
             if !FileManager.default.fileExists(atPath: url.path) {
                 context.stderr("chmod: cannot access '\(file)': no such file\n")
-                error = true
+                hadError = true
                 continue
             }
             let logical = context.fs.logicalPath(of: url)
             FileMetadataStore.shared.update(logical, permissions: modeString)
         }
-        return error ? 1 : 0
+        return hadError ? 1 : 0
     }
 }
 
@@ -198,17 +198,17 @@ struct ChgrpCommand: BuiltinCommand {
         let files = Array(arguments.dropFirst())
         let started = context.fs.startRootAccess()
         defer { if started { context.fs.stopRootAccess() } }
-        var error = false
+        var hadError = false
         for file in files {
             guard let url = context.fs.resolve(file) else {
                 context.stderr("chgrp: cannot access '\(file)'\n")
-                error = true
+                hadError = true
                 continue
             }
             let logical = context.fs.logicalPath(of: url)
             FileMetadataStore.shared.update(logical, group: group)
         }
-        return error ? 1 : 0
+        return hadError ? 1 : 0
     }
 }
 

@@ -187,11 +187,11 @@ struct CatCommand: BuiltinCommand {
         }
         let started = context.fs.startRootAccess()
         defer { if started { context.fs.stopRootAccess() } }
-        var error = false
+        var hadError = false
         for path in arguments {
             guard let url = context.fs.resolve(path) else {
                 context.stderr("cat: \(path): no such file\n")
-                error = true
+                hadError = true
                 continue
             }
             if let data = try? Data(contentsOf: url),
@@ -200,10 +200,10 @@ struct CatCommand: BuiltinCommand {
                 if !str.hasSuffix("\n") { context.stdout("\n") }
             } else {
                 context.stderr("cat: \(path): cannot read file\n")
-                error = true
+                hadError = true
             }
         }
-        return error ? 1 : 0
+        return hadError ? 1 : 0
     }
 }
 

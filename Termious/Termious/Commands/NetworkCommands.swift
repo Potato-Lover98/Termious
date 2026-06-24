@@ -536,14 +536,14 @@ struct TarCommand: BuiltinCommand {
         let nameBytes = Array(name.utf8.prefix(100))
         for (i, b) in nameBytes.enumerated() { entry[i] = b }
         // mode: "644 \0"
-        setOctal(entry, offset: 100, value: 0o644, length: 8)
+        setOctal(&entry, offset: 100, value: 0o644, length: 8)
         // uid/gid: 0
-        setOctal(entry, offset: 108, value: 0, length: 8)
-        setOctal(entry, offset: 116, value: 0, length: 8)
+        setOctal(&entry, offset: 108, value: 0, length: 8)
+        setOctal(&entry, offset: 116, value: 0, length: 8)
         // size
-        setOctal(entry, offset: 124, value: data.count, length: 12)
+        setOctal(&entry, offset: 124, value: data.count, length: 12)
         // mtime
-        setOctal(entry, offset: 136, value: Int(Date().timeIntervalSince1970), length: 12)
+        setOctal(&entry, offset: 136, value: Int(Date().timeIntervalSince1970), length: 12)
         // checksum placeholder
         for i in 148..<156 { entry[i] = 0x20 }
         // typeflag: '0' = file
@@ -551,7 +551,7 @@ struct TarCommand: BuiltinCommand {
         // compute checksum
         var sum = 0
         for byte in entry { sum += Int(byte) }
-        setOctal(entry, offset: 148, value: sum, length: 7)
+        setOctal(&entry, offset: 148, value: sum, length: 7)
         entry[155] = 0x20
         entry.append(data)
         let pad = (512 - (data.count % 512)) % 512

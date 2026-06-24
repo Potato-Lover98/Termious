@@ -26,11 +26,11 @@ struct MkdirCommand: BuiltinCommand {
         let started = context.fs.startRootAccess()
         defer { if started { context.fs.stopRootAccess() } }
         let fm = FileManager.default
-        var error = false
+        var hadError = false
         for d in dirs {
             guard let url = context.fs.resolve(d) else {
                 context.stderr("mkdir: cannot create '\(d)'\n")
-                error = true
+                hadError = true
                 continue
             }
             do {
@@ -41,10 +41,10 @@ struct MkdirCommand: BuiltinCommand {
                 }
             } catch {
                 context.stderr("mkdir: \(error.localizedDescription)\n")
-                error = true
+                hadError = true
             }
         }
-        return error ? 1 : 0
+        return hadError ? 1 : 0
     }
 }
 
@@ -77,32 +77,32 @@ struct RmCommand: BuiltinCommand {
         let started = context.fs.startRootAccess()
         defer { if started { context.fs.stopRootAccess() } }
         let fm = FileManager.default
-        var error = false
+        var hadError = false
         for p in paths {
             guard let url = context.fs.resolve(p) else {
                 if !force { context.stderr("rm: \(p): no such file\n") }
-                error = !force
+                hadError = !force
                 continue
             }
             var isDir: ObjCBool = false
             guard fm.fileExists(atPath: url.path, isDirectory: &isDir) else {
                 if !force { context.stderr("rm: \(p): no such file\n") }
-                error = !force
+                hadError = !force
                 continue
             }
             if isDir.boolValue && !recursive {
                 context.stderr("rm: \(p): is a directory (use -r)\n")
-                error = true
+                hadError = true
                 continue
             }
             do {
                 try fm.removeItem(at: url)
             } catch {
                 if !force { context.stderr("rm: \(error.localizedDescription)\n") }
-                error = !force
+                hadError = !force
             }
         }
-        return error ? 1 : 0
+        return hadError ? 1 : 0
     }
 }
 
@@ -135,7 +135,7 @@ struct CpCommand: BuiltinCommand {
         defer { if started { context.fs.stopRootAccess() } }
         let dst = paths.removeLast()
         let fm = FileManager.default
-        var error = false
+        var hadError = false
 
         let dstURL = context.fs.resolve(dst)
         guard let resolvedDst = dstURL else {
@@ -146,14 +146,14 @@ struct CpCommand: BuiltinCommand {
         for src in paths {
             guard let srcURL = context.fs.resolve(src) else {
                 context.stderr("cp: \(src): no such file\n")
-                error = true
+                hadError = true
                 continue
             }
             var isDir: ObjCBool = false
             fm.fileExists(atPath: srcURL.path, isDirectory: &isDir)
             if isDir.boolValue && !recursive {
                 context.stderr("cp: \(src) is a directory (use -r)\n")
-                error = true
+                hadError = true
                 continue
             }
             let finalDst: URL
@@ -170,10 +170,10 @@ struct CpCommand: BuiltinCommand {
                 try fm.copyItem(at: srcURL, to: finalDst)
             } catch {
                 context.stderr("cp: \(error.localizedDescription)\n")
-                error = true
+                hadError = true
             }
         }
-        return error ? 1 : 0
+        return hadError ? 1 : 0
     }
 }
 
@@ -199,7 +199,7 @@ struct MvCommand: BuiltinCommand {
         defer { if started { context.fs.stopRootAccess() } }
         let dst = paths.removeLast()
         let fm = FileManager.default
-        var error = false
+        var hadError = false
         guard let resolvedDst = context.fs.resolve(dst) else {
             context.stderr("mv: cannot resolve destination '\(dst)'\n")
             return 1
@@ -207,7 +207,7 @@ struct MvCommand: BuiltinCommand {
         for src in paths {
             guard let srcURL = context.fs.resolve(src) else {
                 context.stderr("mv: \(src): no such file\n")
-                error = true
+                hadError = true
                 continue
             }
             let finalDst: URL
@@ -224,10 +224,10 @@ struct MvCommand: BuiltinCommand {
                 try fm.moveItem(at: srcURL, to: finalDst)
             } catch {
                 context.stderr("mv: \(error.localizedDescription)\n")
-                error = true
+                hadError = true
             }
         }
-        return error ? 1 : 0
+        return hadError ? 1 : 0
     }
 }
 
@@ -247,11 +247,11 @@ struct TouchCommand: BuiltinCommand {
         let started = context.fs.startRootAccess()
         defer { if started { context.fs.stopRootAccess() } }
         let fm = FileManager.default
-        var error = false
+        var hadError = false
         for p in arguments {
             guard let url = context.fs.resolve(p) else {
                 context.stderr("touch: cannot touch '\(p)'\n")
-                error = true
+                hadError = true
                 continue
             }
             if fm.fileExists(atPath: url.path) {
@@ -259,10 +259,10 @@ struct TouchCommand: BuiltinCommand {
             } else {
                 if !fm.createFile(atPath: url.path, contents: Data()) {
                     context.stderr("touch: cannot create '\(p)'\n")
-                    error = true
+                    hadError = true
                 }
             }
         }
-        return error ? 1 : 0
+        return hadError ? 1 : 0
     }
 }
