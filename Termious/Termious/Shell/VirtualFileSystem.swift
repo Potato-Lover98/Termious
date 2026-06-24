@@ -37,9 +37,9 @@ public final class VirtualFileSystem {
             let scoped = url.startAccessingSecurityScopedResource()
             defer { if scoped { url.stopAccessingSecurityScopedResource() } }
 
-            let data = try url.bookmark(options: [],
-                                        includingResourceValuesForKeys: nil,
-                                        relativeTo: nil)
+            let data = try url.bookmarkData(options: [],
+                                            includingResourceValuesForKeys: nil,
+                                            relativeTo: nil)
             let id = url.lastPathComponent.isEmpty ? "root" : url.lastPathComponent
             bookmarks[id] = data
             resolvedRoots[id] = url
@@ -61,9 +61,9 @@ public final class VirtualFileSystem {
             bookmarkDataIsStale: &stale
         ) else { return nil }
         if stale {
-            if let renewed = try? url.bookmark(options: [],
-                                                includingResourceValuesForKeys: nil,
-                                                relativeTo: nil) {
+            if let renewed = try? url.bookmarkData(options: [],
+                                                    includingResourceValuesForKeys: nil,
+                                                    relativeTo: nil) {
                 bookmarks[id] = renewed
                 saveBookmarks()
             }
@@ -140,14 +140,14 @@ public final class VirtualFileSystem {
         return rel.isEmpty ? "/" : (rel.hasPrefix("/") ? rel : "/" + rel)
     }
 
-    func changeDirectory(to logicalPath: String) -> ShellResult {
-        guard let url = resolve(logicalPath) else {
-            return .failure("cd: no such directory: \(logicalPath)")
+    func changeDirectory(to path: String) -> ShellResult {
+        guard let url = resolve(path) else {
+            return .failure("cd: no such directory: \(path)")
         }
         var isDir: ObjCBool = false
         guard FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir),
               isDir.boolValue else {
-            return .failure("cd: not a directory: \(logicalPath)")
+            return .failure("cd: not a directory: \(path)")
         }
         cwd = logicalPath(of: url)
         if cwd.isEmpty { cwd = "/" }

@@ -88,7 +88,7 @@ enum SyntaxHighlighter {
             else if word.hasPrefix("//") || word.hasPrefix("#") { color = UIColor(red: 0.45, green: 0.55, blue: 0.50, alpha: 1) }
             else if word.first == "\"" || word.first == "'" { color = UIColor(red: 0.75, green: 0.85, blue: 0.45, alpha: 1) }
             else if let _ = Int(word) { color = UIColor(red: 0.70, green: 0.50, blue: 0.90, alpha: 1) }
-            else if word.allSatisfy({ $0 == "_" || $0.isLetter }) && Character(word.uppercased().first ?? " ") != word.first {
+            else if word.allSatisfy({ $0 == "_" || $0.isLetter }) && (word.first?.isUppercase ?? false) {
                 color = UIColor(red: 0.50, green: 0.80, blue: 1.0, alpha: 1)
             } else {
                 color = UIColor(red: 0.88, green: 0.90, blue: 0.92, alpha: 1)
