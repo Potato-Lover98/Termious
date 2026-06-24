@@ -151,7 +151,7 @@ struct ChmodCommand: BuiltinCommand {
         let files = Array(arguments.dropFirst())
 
         // Validate octal mode
-        guard let mode = UInt8(modeStr, radix: 8), mode <= 0o777 else {
+        guard let mode = UInt(modeStr, radix: 8), mode <= 0o777 else {
             context.stderr("chmod: invalid mode: '\(modeStr)'\n")
             return 1
         }

@@ -55,7 +55,7 @@ public final class AeroPackageManager {
     ///   - progress: called with progress messages
     public func install(repo: String, ref: String?, name: String?,
                         fs: VirtualFileSystem,
-                        progress: (String) -> Void,
+                        progress: @escaping (String) -> Void,
                         completion: @escaping (Result<AeroPackage, Error>) -> Void) {
         let cleanRepo = repo.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
         let pkgName = name ?? cleanRepo.split(separator: "/").last.map(String.init) ?? cleanRepo
