@@ -1,0 +1,101 @@
+name: Build IPA
+
+on:
+  push:
+    branches: ["main", "master"]
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build IPA for AltStore
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.3.app/Contents/Developer || sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer || sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: Termious
+        run: xcodegen generate
+
+      - name: Build archive (unsigned for sideload)
+        working-directory: Termious
+        run: |
+          set -euxo pipefail
+          xcodebuild clean \
+            -project Termious.xcodeproj \
+            -scheme Termious \
+            -configuration Release \
+            -archivePath build/Termious.xcarchive \
+            -destination "generic/platform=iOS" \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM="" \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            archive
+
+      - name: Package IPA
+        working-directory: Termious
+        run: |
+          set -euxo pipefail
+          mkdir -p Payload
+          cp -R build/Termious.xcarchive/Products/Applications/Termious.app Payload/
+          zip -qry Termious.ipa Payload
+          ls -lh Termious.ipa
+
+      - name: Generate AltStore manifest
+        working-directory: Termious
+        run: |
+          VERSION="${GITHUB_REF_NAME:-1.0.0}"
+          if [ "$VERSION" = "main" ] || [ "$VERSION" = "master" ]; then
+            VERSION="1.0.0-$(date -u +%Y%m%d%H%M)"
+          fi
+          DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          SIZE=$(stat -f%z Termious.ipa)
+          cat > altstore.json <<ENDJSON
+          {
+            "name": "Termious",
+            "bundleIdentifier": "com.termious.app",
+            "version": "${VERSION}",
+            "versionDate": "${DATE}",
+            "versionDescription": "Termious ${VERSION} - sandboxed iOS terminal with aero package manager, sudo, 200+ commands, Tineo editor, and 15 background styles.",
+            "downloadURL": "https://github.com/${{ github.repository }}/releases/download/${VERSION}/Termious.ipa",
+            "size": ${SIZE},
+            "minOSVersion": "16.0",
+            "developerName": "Termious"
+          }
+          ENDJSON
+          cat altstore.json
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Termious-ipa
+          path: Termious/Termious.ipa
+          if-no-files-found: error
+
+      - name: Upload manifest artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: altstore-manifest
+          path: Termious/altstore.json
+
+      - name: Create GitHub release with IPA
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            Termious/Termious.ipa
+            Termious/altstore.json
+          generate_release_notes: true
+          name: Termious ${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
